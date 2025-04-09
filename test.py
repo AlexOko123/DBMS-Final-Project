@@ -174,14 +174,6 @@ def is_already_created(cursor, object_id, object_type):
             {"actor_id": object_id},
         )
         return cursor.fetchone() is not None
-    elif object_type == "writer":
-        cursor.execute(
-            """
-            SELECT 1 FROM Writer WHERE writer_id = :writer_id
-            """,
-            {"writer_id": object_id},
-        )
-        return cursor.fetchone() is not None
 
 
 def get_tv_ids():
@@ -454,7 +446,7 @@ def handle_db():
     def init_create_tables():
         cursor.execute("""
 	    CREATE TABLE Movie(
-    	    MID             VARCHAR2(11) CONSTRAINT Movie_MID_PK PRIMARY KEY,
+    	    MID             CHAR(9) CONSTRAINT Movie_MID_PK PRIMARY KEY,
     	    Title           VARCHAR2(50),
     	    Runtime         NUMBER(3),
     	    Year_of_Release NUMBER(4),
@@ -464,7 +456,7 @@ def handle_db():
 
         cursor.execute("""
 	    CREATE TABLE Director(
-    	    DID            VARCHAR2(11) CONSTRAINT Director_MID_PK PRIMARY KEY,
+    	    DID            CHAR(9) CONSTRAINT Director_MID_PK PRIMARY KEY,
     	    FName          VARCHAR2(20),
     	    MInit          CHAR(1),
     	    LName          VARCHAR2(20),
@@ -476,7 +468,7 @@ def handle_db():
 
         cursor.execute("""
 	    CREATE TABLE Movie_Review(
-    	    MID            VARCHAR2(11),
+    	    MID            CHAR(9),
     	    Reviewer       VARCHAR2(40),
     	    Title          VARCHAR2(50),
     	    Star           NUMBER(2),
@@ -488,23 +480,23 @@ def handle_db():
 
         cursor.execute("""
 	    CREATE TABLE Directs_Movie(
-    	    MID            VARCHAR2(11),
-    	    DID            VARCHAR2(11),
+    	    MID            CHAR(9),
+    	    DID            CHAR(9),
     	    CONSTRAINT Directs_Movie_mid_did_PK PRIMARY KEY(Mid, Did)
 	    )
 	    """)
 
         cursor.execute("""
 	    CREATE TABLE Directs_TV_Show(
-    	    TID            VARCHAR2(11),
-    	    DID            VARCHAR2(11),
+    	    TID            CHAR(9),
+    	    DID            CHAR(9),
     	    CONSTRAINT Directs_TV_Show_tid_did_PK PRIMARY KEY(Tid, Did)
 	    )
 	    """)
 
         cursor.execute("""
 	    CREATE TABLE Movie_Genre(
-    	    MID            VARCHAR2(11),
+    	    MID            CHAR(9),
     	    MGenre         VARCHAR2(50),
     	    CONSTRAINT Movie_Genre_Mid_Mgenre_PK PRIMARY KEY(Mid, Mgenre)
 	    )
@@ -512,7 +504,7 @@ def handle_db():
 
         cursor.execute("""
 	    CREATE TABLE Movie_Awards(
-    	    MID            VARCHAR2(11),
+    	    MID            CHAR(9),
     	    MAwards        VARCHAR2(200),
     	    CONSTRAINT Movie_Awards_Mid_Mawards_PK PRIMARY KEY(Mid, Mawards)
 	    )
@@ -520,7 +512,7 @@ def handle_db():
 
         cursor.execute("""
 	    CREATE TABLE Movie_SServices(
-    	    MID            VARCHAR2(11),
+    	    MID            CHAR(9),
     	    MSS            VARCHAR2(100),
     	    CONSTRAINT Movie_SServices_Mid_Mss_PK PRIMARY KEY(Mid, Mss)
 	    )
@@ -553,17 +545,17 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Tv_Show
     	    (
-        	    id VARCHAR2(11) CONSTRAINT tv_show_id_pk PRIMARY KEY,
+        	    id CHAR(9) CONSTRAINT tv_show_id_pk PRIMARY KEY,
         	    title VARCHAR2(30),
         	    tv_show_rating NUMBER(2,1),
-        	    year_of_release VARCHAR(15)
+        	    year_of_release CHAR(4)
     	    )
 	    """)
 
         cursor.execute("""
     	    CREATE TABLE Show_Award
     	    (
-        	    tv_show_id VARCHAR2(11),
+        	    tv_show_id CHAR(9),
         	    Saward VARCHAR2(20),
         	    CONSTRAINT show_award_tvid_saward_pk PRIMARY KEY(tv_show_id, Saward)
     	    )
@@ -572,10 +564,9 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Show_Review
     	    (
-        	    tv_show_id VARCHAR2(11),
-        	    reviewing_user_id VARCHAR2(11),
-        	    title VARCHAR(50),
-        	    description VARCHAR2(3000),
+        	    tv_show_id CHAR(9),
+        	    reviewing_user_id CHAR(9),
+        	    description VARCHAR2(500),
         	    star_rating Number(2),
         	    date_of_review DATE,
         	    CONSTRAINT show_review_tvid_reviwer_id_pk PRIMARY KEY(tv_show_id, reviewing_user_id)
@@ -585,7 +576,7 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Show_Genre
     	    (
-        	    tv_show_id VARCHAR2(11),
+        	    tv_show_id CHAR(9),
         	    genre VARCHAR2(20),
         	    CONSTRAINT show_genre_tvid_genre_pk PRIMARY KEY(tv_show_id, genre)
     	    )
@@ -594,7 +585,7 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Show_Media
     	    (
-        	    tv_show_id VARCHAR2(11),
+        	    tv_show_id CHAR(9),
         	    media VARCHAR2(20),
         	    CONSTRAINT show_media_tvid_media_pk PRIMARY KEY(media, tv_show_id)
     	    )
@@ -603,7 +594,7 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Show_Streaming_Services
     	    (
-        	    tv_show_id VARCHAR2(11),
+        	    tv_show_id CHAR(9),
         	    streaming_service VARCHAR2(20),
         	    CONSTRAINT showSS_media_tvid_pk PRIMARY KEY(streaming_service, tv_show_id)
     	    )
@@ -612,11 +603,11 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Actor
     	    (
-        	    actor_id VARCHAR2(11) CONSTRAINT actor_actor_id_pk PRIMARY KEY,
+        	    actor_id CHAR(9) CONSTRAINT actor_actor_id_pk PRIMARY KEY,
         	    f_name VARCHAR2(25),
         	    m_initial CHAR(1),
         	    l_name VARCHAR2(25),
-        	    biography VARCHAR2(3000),
+        	    biography VARCHAR2(500),
         	    dob DATE,
         	    age NUMBER(3)
     	    )
@@ -625,7 +616,7 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Actor_Media
     	    (
-        	    actor_id VARCHAR2(11),
+        	    actor_id CHAR(9),
         	    media VARCHAR2(20),
         	    CONSTRAINT actor_media_tvid_media_pk PRIMARY KEY(media, actor_id)
     	    )
@@ -634,8 +625,8 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Acts_Show
     	    (
-        	    actor_id VARCHAR2(11),
-        	    tv_show_id VARCHAR2(11),
+        	    actor_id CHAR(9),
+        	    tv_show_id CHAR(9),
         	    CONSTRAINT acts_show_actorid_tvid_pk PRIMARY KEY(actor_id, tv_show_id)
     	    )
 	    """)
@@ -643,8 +634,8 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Acts_Movie
     	    (
-        	    actor_id VARCHAR2(11),
-        	    movie_id VARCHAR2(11),
+        	    actor_id CHAR(9),
+        	    movie_id CHAR(9),
         	    CONSTRAINT acts_movie_actorid_movieid_pk PRIMARY KEY(actor_id, movie_id)
     	    )
 	    """)
@@ -652,11 +643,11 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Writer
     	    (
-        	    writer_id VARCHAR2(11) CONSTRAINT writer_writer_id PRIMARY KEY,
+        	    writer_id CHAR(9) CONSTRAINT writer_writer_id PRIMARY KEY,
         	    f_name VARCHAR2(25),
         	    m_initial CHAR(1),
         	    l_name VARCHAR2(25),
-        	    biography VARCHAR2(3000),
+        	    biography VARCHAR2(500),
         	    dob DATE,
         	    age NUMBER(3)
     	    )
@@ -665,7 +656,7 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Writer_Media
     	    (
-        	    writer_id VARCHAR2(11),
+        	    writer_id CHAR(9),
         	    media VARCHAR2(20),
         	    CONSTRAINT writer_media_tvid_media_pk PRIMARY KEY(media, writer_id)
     	    )
@@ -674,8 +665,8 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Writes_Show
     	    (
-        	    writer_id VARCHAR2(11),
-        	    tv_show_id VARCHAR2(11),
+        	    writer_id CHAR(9),
+        	    tv_show_id CHAR(9),
         	    CONSTRAINT writes_show_writerid_tvid_pk PRIMARY KEY(writer_id, tv_show_id)
     	    )
 	    """)
@@ -683,8 +674,8 @@ def handle_db():
         cursor.execute("""
     	    CREATE TABLE Writes_Movie
     	    (
-        	    writer_id VARCHAR2(11),
-        	    movie_id VARCHAR2(11),
+        	    writer_id CHAR(9),
+        	    movie_id CHAR(9),
         	    CONSTRAINT writes_movie_wid_mid_pk PRIMARY KEY(writer_id, movie_id)
     	    )
 	    """)
@@ -863,15 +854,14 @@ def handle_db():
 
                 # movie awards
 
-                for movie_award in movie_data.get("Awards").split(","):
-                    cursor.execute(
-                        """
-                        INSERT INTO Movie_Awards
-                        VALUES (:1, :2)
-                        """,
-                        (movie_id, movie_award.strip()),
-                    )
-                    conn.commit()
+                cursor.execute(
+                    """
+                    INSERT INTO Movie_Awards
+                    VALUES (:1, :2)
+                    """,
+                    (movie_id, movie_data.get("Awards")),
+                )
+                conn.commit()
 
                 # Movie services
 
@@ -888,6 +878,9 @@ def handle_db():
 
                 user, review_title, user_rating, review_content, review_date = (
                     get_movie_review(movie_id))
+                # print(user, review_title, user_rating, review_content,
+                #       review_date)
+
                 cursor.execute(
                     """
                     INSERT INTO Movie_Review
@@ -924,200 +917,16 @@ def handle_db():
                                     actor.split(" ")[0],
                                     None,
                                     actor.split(" ")[1],
-                                    actor_description,
                                     actor_dob,
                                     actor_age,
+                                    actor_description,
                                 ),
                             )
                             conn.commit()
-
-                    # acts in movie
-                    cursor.execute(
-                        """
-                        INSERT INTO  Acts_Movie (actor_id, movie_id) 
-                        VALUES (:1, :2)
-                        """,
-                        (actor_id, movie_id),
-                    )
-                    conn.commit()
-
-                # writer
-                writers = movie_data.get("Writer").split(",")
-                for writer in writers:
-                    writer = writer.strip()
-                    writer_id, writer_description, writer_dob = get_director_data(
-                        writer)
-                    if writer_id != None:
-                        if not is_already_created(cursor, writer_id, "writer"):
-                            # add to directors table since not there
-                            writer_age = calculate_age(writer_dob)
-                            cursor.execute(
-                                """
-                                INSERT INTO Writer 
-                                VALUES (:1, :2, :3, :4, :5, :6, :7)
-                                """,
-                                (
-                                    writer_id,
-                                    writer.split(" ")[0],
-                                    None,
-                                    writer.split(" ")[1],
-                                    writer_description,
-                                    writer_dob,
-                                    writer_age,
-                                ),
-                            )
-                            conn.commit()
-
-                    # acts in movie
-                    cursor.execute(
-                        """
-                        INSERT INTO  Writes_Movie (writer_id, movie_id) 
-                        VALUES (:1, :2)
-                        """,
-                        (writer_id, movie_id),
-                    )
-                    conn.commit()
-
             except Exception as e:
                 print(f"Skipping director {director_id} ...", str(e))
 
-    # fill_movie_data()
-
-    def fill_tv_data():
-        for show_id, _ in tv_show_ids_json.items():
-            response = requests.get(main_api_url +
-                                    media_data_url.format(show_id))
-            print(main_api_url + media_data_url.format(show_id))
-            show_data = json.loads(response.text)
-            cursor.execute(
-                """
-            	INSERT INTO Tv_Show
-            	VALUES (:1, :2, :3, :4)
-        	""",
-                (
-                    show_id,
-                    show_data.get("Title"),
-                    float(show_data.get("imdbRating")),
-                    show_data.get("Year"),
-                ),
-            )
-            conn.commit()
-
-            show_director = show_data.get("Director")
-            show_writers = show_data.get("Writer").split(",")
-            show_actors = show_data.get("Actors").split(",")
-            show_awards = show_data.get("Awards").split(",")
-            show_genres = show_data.get("Genre").split(",")
-            director_id, director_description, director_dob = get_director_data(
-                show_director)
-            if director_id != None:
-                if not is_already_created(cursor, show_director, "director"):
-                    director_age = calculate_age(director_dob)
-                    cursor.execute(
-                        """
-                        INSERT INTO  Director (DID, FName, MInit, LName, Date_of_Birth, Age, Biography)
-                        VALUES (:1, :2, :3, :4, :5, :6, :7)
-                        """,
-                        (
-                            director_id,
-                            show_director.split(" ")[0],
-                            None,
-                            show_director.split(" ")[1],
-                            director_dob,
-                            director_age,
-                            director_description,
-                        ),
-                    )
-                    conn.commit()
-
-                # directs tv show
-                cursor.execute(
-                    """
-                    INSERT INTO  Directs_TV_Show (TID, DID) 
-                    VALUES (:1, :2)
-                    """,
-                    (show_id, director_id),
-                )
-                conn.commit()
-
-                # show awards
-                for award in show_awards:
-                    cursor.execute(
-                        """
-                        INSERT INTO Show_Award
-                        VALUES (:1, :2)
-                        """,
-                        (show_id, award.strip),
-                    )
-                    conn.commit()
-
-                for genre in show_genres:
-                    cursor.execute(
-                        """
-                        INSERT INTO Show_Genre
-                        VALUES (:1, :2)
-                        """,
-                        (show_id, genre.strip()),
-                    )
-                    conn.commit()
-
-                # show review
-
-                user, review_title, user_rating, review_content, review_date = (
-                    get_movie_review(show_id))
-
-                cursor.execute(
-                    """
-                    INSERT INTO Show_Review
-                    VALUES (:1, :2, :3, :4, :5, :6)
-                    """,
-                    (
-                        show_id,
-                        user,
-                        review_title,
-                        review_content,
-                        user_rating,
-                        review_date,
-                    ),
-                )
-                conn.commit()
-
-                for actor in show_actors:
-                    actor = actor.strip()
-                    actor_id, actor_description, actor_dob = get_director_data(
-                        actor)
-                    if actor_id != None:
-                        if not is_already_created(cursor, actor_id, "actor"):
-                            # add to directors table since not there
-                            actor_age = calculate_age(actor_dob)
-                            cursor.execute(
-                                """
-                                INSERT INTO Actor 
-                                VALUES (:1, :2, :3, :4, :5, :6, :7)
-                                """,
-                                (
-                                    actor_id,
-                                    actor.split(" ")[0],
-                                    None,
-                                    actor.split(" ")[1],
-                                    actor_description,
-                                    actor_dob,
-                                    actor_age,
-                                ),
-                            )
-                            conn.commit()
-
-                    # acts in show
-                    cursor.execute(
-                        """
-                        INSERT INTO Acts_Show 
-                        VALUES (:1, :2)
-                        """,
-                        (actor_id, show_id),
-                    )
-                    conn.commit()
-
-    fill_tv_data()
+    fill_movie_data()
     # cursor.execute("SELECT * FROM Movie")
     # rows = cursor.fetchall()
     # for row in rows:
