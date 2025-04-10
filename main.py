@@ -447,12 +447,6 @@ def handle_db():
         cursor.execute("DROP TABLE Show_Award CASCADE CONSTRAINTS")
         cursor.execute("DROP TABLE Tv_Show CASCADE CONSTRAINTS")
 
-    try:
-        init_drop()
-        sleep(0.5)
-    except Exception as e:
-        print("Something went wrong dropping tables", str(e))
-
     def init_create_tables():
         cursor.execute("""
 	    CREATE TABLE Movie(
@@ -781,11 +775,6 @@ def handle_db():
     	    REFERENCES movie(MID)
 	    """)
 
-    try:
-        init_create_tables()
-    except Exception as e:
-        print("something went wrong creating tables", str(e))
-
     # example:
     # cursor.execute("""
     # INSERT INTO Movie (MID, Title, Runtime, Year_of_Release, User_Rating)
@@ -794,6 +783,7 @@ def handle_db():
 
     def fill_movie_data():
         for movie_id, _ in movie_ids_json.items():
+            print("Doing movie:", movie_id)
             response = requests.get(main_api_url +
                                     media_data_url.format(movie_id))
             movie_data = json.loads(response.text)
@@ -981,8 +971,6 @@ def handle_db():
             except Exception as e:
                 print(f"Skipping director {director_id} ...", str(e))
 
-    # fill_movie_data()
-
     def fill_tv_data():
         for show_id, _ in tv_show_ids_json.items():
             try:
@@ -1152,10 +1140,29 @@ def handle_db():
                         (writer_id, show_id),
                     )
                     conn.commit()
+
             except Exception as e:
                 print("Something went wrong filling tv show... ", str(e))
 
+    try:
+        print("Dropping tables ...")
+        init_drop()
+        sleep(0.5)
+    except Exception as e:
+        print("Something went wrong dropping tables", str(e))
+    try:
+        print("Initializing tables ...")
+        init_create_tables()
+    except Exception as e:
+        print("something went wrong creating tables", str(e))
+
+    print("Filling movie data .. ")
+    fill_movie_data()
+    print("Finished filling movie data")
+    print("Filling Tv data ... ")
     fill_tv_data()
+    print("Finished filling Tv data")
+
     # cursor.execute("SELECT * FROM Movie")
     # rows = cursor.fetchall()
     # for row in rows:
