@@ -33,3 +33,12 @@ Service	XEPDB1
 
 - Try to simplify/fix the bs4 calls, don't have to go layer by layer
 - Remove array for already_called_directors, use SQL mechanisim instead
+
+
+### Resources
+
+- https://www.omdbapi.com/
+- https://oracle.github.io/python-oracledb/
+- https://python-oracledb.readthedocs.io/en/latest/user_guide/introduction.html
+- https://www.dbvis.com/download/
+- https://www.oracle.com/database/technologies/xe-downloads.html and https://www.oracle.com/database/technologies/instant-client/linux-x86-64-downloads.html (not needed)
