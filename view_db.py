@@ -7,19 +7,40 @@ def main():
                             dsn="localhost/XEPDB1")
     cursor = conn.cursor()
 
-    # cursor.execute("""
-    #     INSERT INTO Movie_Genre
-    #     VALUES ('tt2582802', 'Horror')
-    # """)
-    # conn.commit()
+    tables = [
+        "Movie",
+        "Director",
+        "Movie_Review",
+        "Directs_Movie",
+        "Directs_TV_Show",
+        "Movie_Genre",
+        "Movie_Awards",
+        "Movie_SServices",
+        "Writes_Movie",
+        "Writes_Show",
+        "Writer_Media",
+        "Writer",
+        "Acts_Movie",
+        "Acts_Show",
+        "Actor_Media",
+        "Actor",
+        "Show_Streaming_Services",
+        "Show_Media",
+        "Show_Genre",
+        "Show_Review",
+        "Show_Award",
+        "Tv_Show",
+    ]
 
-    cursor.execute("SELECT * FROM Tv_Show")
-    rows = cursor.fetchall()
-    counter = 0
-    for row in rows:
-        print(row)
-        counter += 1
-    print(counter)
+    for table in tables:
+        try:
+            print(f"\n--- {table} ---")
+            cursor.execute(f"SELECT * FROM {table}")
+            rows = cursor.fetchall()
+            for row in rows:
+                print(row)
+        except oracledb.DatabaseError as e:
+            print(f"Error querying table {table}: {e}")
 
     cursor.close()
     conn.close()

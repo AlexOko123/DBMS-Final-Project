@@ -370,45 +370,47 @@ def get_director_data(director_name):
     response = requests.get(search_url.format(director_name.replace(
         " ", "%20")),
                             headers=headers)
-    print(response)
-    search_results = BeautifulSoup(response.text, "lxml")
-    div_preview = search_results.find("div", class_="sc-b03627f1-2 gWHDBT")
-    ul = div_preview.find("ul")
-    lis = ul.find_all("li")
-    obj_div = lis[0].find("div", class_="ipc-metadata-list-summary-item__c")
-    obj_a = obj_div.find("a", class_="ipc-metadata-list-summary-item__t")
-    if str(obj_a.text).lower() == director_name.lower():
-        director_id_url = obj_a["href"]
-        data_response = requests.get(imdb_url + director_id_url,
-                                     headers=headers)
-        data_results = BeautifulSoup(data_response.text, "lxml")
-        # description = data_results.find("meta", attrs={"name": "description"})
-        description_div = data_results.find(
-            "div",
-            class_=
-            "ipc-html-content ipc-html-content--baseAlt ipc-html-content--display-inline sc-6e8cf83d-1 bHPaCP",
-        )
-        description_sub_div = description_div.find(
-            "div", class_="ipc-html-content-inner-div")
-        text_description = description_sub_div.text
+    if response.status_code == 200:
+        search_results = BeautifulSoup(response.text, "lxml")
+        div_preview = search_results.find("div", class_="sc-b03627f1-2 gWHDBT")
+        ul = div_preview.find("ul")
+        lis = ul.find_all("li")
+        obj_div = lis[0].find("div",
+                              class_="ipc-metadata-list-summary-item__c")
+        obj_a = obj_div.find("a", class_="ipc-metadata-list-summary-item__t")
+        if str(obj_a.text).lower() == director_name.lower():
+            director_id_url = obj_a["href"]
+            data_response = requests.get(imdb_url + director_id_url,
+                                         headers=headers)
+            data_results = BeautifulSoup(data_response.text, "lxml")
+            # description = data_results.find("meta", attrs={"name": "description"})
+            description_div = data_results.find(
+                "div",
+                class_=
+                "ipc-html-content ipc-html-content--baseAlt ipc-html-content--display-inline sc-6e8cf83d-1 bHPaCP",
+            )
+            description_sub_div = description_div.find(
+                "div", class_="ipc-html-content-inner-div")
+            text_description = description_sub_div.text
 
-        # finding DOB
-        personal_info_section = data_results.find("div",
-                                                  {"data-testid": "nm_pd_hd"})
-        personal_info_ul = personal_info_section.find("ul")
+            # finding DOB
+            personal_info_section = data_results.find(
+                "div", {"data-testid": "nm_pd_hd"})
+            personal_info_ul = personal_info_section.find("ul")
 
-        personal_info_lis = personal_info_ul.find_all("li")
-        date_born_li = personal_info_ul.find("li", {"data-testid": "nm_pd_bl"})
-        born_date_li = date_born_li.find(
-            "li", class_="ipc-inline-list__item test-class-react")
-        date_obj = datetime.strptime(born_date_li.text, "%B %d, %Y")
+            personal_info_lis = personal_info_ul.find_all("li")
+            date_born_li = personal_info_ul.find("li",
+                                                 {"data-testid": "nm_pd_bl"})
+            born_date_li = date_born_li.find(
+                "li", class_="ipc-inline-list__item test-class-react")
+            date_obj = datetime.strptime(born_date_li.text, "%B %d, %Y")
 
-        director_id_url = director_id_url.split("/")
-        return (
-            director_id_url[director_id_url.index("name") + 1],
-            text_description[:2999],
-            date_obj,
-        )
+            director_id_url = director_id_url.split("/")
+            return (
+                director_id_url[director_id_url.index("name") + 1],
+                text_description[:2999],
+                date_obj,
+            )
     return None, None, None
 
 
@@ -554,7 +556,7 @@ def handle_db():
     	    CREATE TABLE Tv_Show
     	    (
         	    id VARCHAR2(11) CONSTRAINT tv_show_id_pk PRIMARY KEY,
-        	    title VARCHAR2(30),
+        	    title VARCHAR2(200),
         	    tv_show_rating NUMBER(2,1),
         	    year_of_release VARCHAR(15)
     	    )
@@ -564,7 +566,7 @@ def handle_db():
     	    CREATE TABLE Show_Award
     	    (
         	    tv_show_id VARCHAR2(11),
-        	    Saward VARCHAR2(20),
+        	    Saward VARCHAR2(500),
         	    CONSTRAINT show_award_tvid_saward_pk PRIMARY KEY(tv_show_id, Saward)
     	    )
 	    """)
@@ -573,7 +575,7 @@ def handle_db():
     	    CREATE TABLE Show_Review
     	    (
         	    tv_show_id VARCHAR2(11),
-        	    reviewing_user_id VARCHAR2(11),
+        	    reviewing_user_id VARCHAR2(100),
         	    title VARCHAR(50),
         	    description VARCHAR2(3000),
         	    star_rating Number(2),
@@ -820,8 +822,6 @@ def handle_db():
                     if not is_already_created(cursor, director_id, "director"):
                         # add to directors table since not there
                         director_age = calculate_age(director_dob)
-                        print(director_age)
-                        print(director_dob)
                         cursor.execute(
                             """
                             INSERT INTO  Director (DID, FName, MInit, LName, Date_of_Birth, Age, Biography)
@@ -968,7 +968,7 @@ def handle_db():
                             )
                             conn.commit()
 
-                    # acts in movie
+                    # writes in movie
                     cursor.execute(
                         """
                         INSERT INTO  Writes_Movie (writer_id, movie_id) 
@@ -985,60 +985,61 @@ def handle_db():
 
     def fill_tv_data():
         for show_id, _ in tv_show_ids_json.items():
-            response = requests.get(main_api_url +
-                                    media_data_url.format(show_id))
-            print(main_api_url + media_data_url.format(show_id))
-            show_data = json.loads(response.text)
-            cursor.execute(
-                """
-            	INSERT INTO Tv_Show
-            	VALUES (:1, :2, :3, :4)
-        	""",
-                (
-                    show_id,
-                    show_data.get("Title"),
-                    float(show_data.get("imdbRating")),
-                    show_data.get("Year"),
-                ),
-            )
-            conn.commit()
-
-            show_director = show_data.get("Director")
-            show_writers = show_data.get("Writer").split(",")
-            show_actors = show_data.get("Actors").split(",")
-            show_awards = show_data.get("Awards").split(",")
-            show_genres = show_data.get("Genre").split(",")
-            director_id, director_description, director_dob = get_director_data(
-                show_director)
-            if director_id != None:
-                if not is_already_created(cursor, show_director, "director"):
-                    director_age = calculate_age(director_dob)
-                    cursor.execute(
-                        """
-                        INSERT INTO  Director (DID, FName, MInit, LName, Date_of_Birth, Age, Biography)
-                        VALUES (:1, :2, :3, :4, :5, :6, :7)
-                        """,
-                        (
-                            director_id,
-                            show_director.split(" ")[0],
-                            None,
-                            show_director.split(" ")[1],
-                            director_dob,
-                            director_age,
-                            director_description,
-                        ),
-                    )
-                    conn.commit()
-
-                # directs tv show
+            try:
+                response = requests.get(main_api_url +
+                                        media_data_url.format(show_id))
+                show_data = json.loads(response.text)
                 cursor.execute(
                     """
-                    INSERT INTO  Directs_TV_Show (TID, DID) 
-                    VALUES (:1, :2)
-                    """,
-                    (show_id, director_id),
+            	    INSERT INTO Tv_Show
+            	    VALUES (:1, :2, :3, :4)
+        	    """,
+                    (
+                        show_id,
+                        show_data.get("Title"),
+                        float(show_data.get("imdbRating")),
+                        show_data.get("Year"),
+                    ),
                 )
                 conn.commit()
+
+                show_director = show_data.get("Director")
+                show_writers = show_data.get("Writer").split(",")
+                show_actors = show_data.get("Actors").split(",")
+                show_awards = show_data.get("Awards").split(",")
+                show_genres = show_data.get("Genre").split(",")
+                director_id, director_description, director_dob = get_director_data(
+                    show_director)
+                if director_id != None:
+                    if not is_already_created(cursor, show_director,
+                                              "director"):
+                        director_age = calculate_age(director_dob)
+                        cursor.execute(
+                            """
+                            INSERT INTO  Director (DID, FName, MInit, LName, Date_of_Birth, Age, Biography)
+                            VALUES (:1, :2, :3, :4, :5, :6, :7)
+                            """,
+                            (
+                                director_id,
+                                show_director.split(" ")[0],
+                                None,
+                                show_director.split(" ")[1],
+                                director_dob,
+                                director_age,
+                                director_description,
+                            ),
+                        )
+                        conn.commit()
+
+                    # directs tv show
+                    cursor.execute(
+                        """
+                        INSERT INTO  Directs_TV_Show (TID, DID) 
+                        VALUES (:1, :2)
+                        """,
+                        (show_id, director_id),
+                    )
+                    conn.commit()
 
                 # show awards
                 for award in show_awards:
@@ -1047,7 +1048,7 @@ def handle_db():
                         INSERT INTO Show_Award
                         VALUES (:1, :2)
                         """,
-                        (show_id, award.strip),
+                        (show_id, award.strip()),
                     )
                     conn.commit()
 
@@ -1116,6 +1117,43 @@ def handle_db():
                         (actor_id, show_id),
                     )
                     conn.commit()
+
+                for writer in show_writers:
+                    writer = writer.strip()
+                    writer_id, writer_description, writer_dob = get_director_data(
+                        writer)
+                    if writer_id != None:
+                        if not is_already_created(cursor, writer_id, "writer"):
+                            # add to directors table since not there
+                            writer_age = calculate_age(writer_dob)
+                            cursor.execute(
+                                """
+                                INSERT INTO Writer 
+                                VALUES (:1, :2, :3, :4, :5, :6, :7)
+                                """,
+                                (
+                                    writer_id,
+                                    writer.split(" ")[0],
+                                    None,
+                                    writer.split(" ")[1],
+                                    writer_description,
+                                    writer_dob,
+                                    writer_age,
+                                ),
+                            )
+                            conn.commit()
+
+                    # writes in show
+                    cursor.execute(
+                        """
+                        INSERT INTO Writes_Show 
+                        VALUES (:1, :2)
+                        """,
+                        (writer_id, show_id),
+                    )
+                    conn.commit()
+            except Exception as e:
+                print("Something went wrong filling tv show... ", str(e))
 
     fill_tv_data()
     # cursor.execute("SELECT * FROM Movie")
