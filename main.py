@@ -466,7 +466,7 @@ def handle_db():
     	    LName          VARCHAR2(20),
     	    Date_of_Birth  DATE,
     	    Age            NUMBER(3),
-    	    Biography      VARCHAR2(3000)
+    	    Biography      VARCHAR2(4000)
 	    )
 	    """)
 
@@ -474,9 +474,9 @@ def handle_db():
 	    CREATE TABLE Movie_Review(
     	    MID            VARCHAR2(11),
     	    Reviewer       VARCHAR2(40),
-    	    Title          VARCHAR2(50),
+    	    Title          VARCHAR2(200),
     	    Star           NUMBER(2),
-    	    Description    VARCHAR2(3000),
+    	    Description    VARCHAR2(4000),
     	    MRDate         DATE,
     	    CONSTRAINT Movie_Review_pk PRIMARY KEY(Mid, Reviewer)
 	    )
@@ -570,8 +570,8 @@ def handle_db():
     	    (
         	    tv_show_id VARCHAR2(11),
         	    reviewing_user_id VARCHAR2(100),
-        	    title VARCHAR(50),
-        	    description VARCHAR2(3000),
+        	    title VARCHAR(200),
+        	    description VARCHAR2(4000),
         	    star_rating Number(2),
         	    date_of_review DATE,
         	    CONSTRAINT show_review_tvid_reviwer_id_pk PRIMARY KEY(tv_show_id, reviewing_user_id)
@@ -612,7 +612,7 @@ def handle_db():
         	    f_name VARCHAR2(25),
         	    m_initial CHAR(1),
         	    l_name VARCHAR2(25),
-        	    biography VARCHAR2(3000),
+        	    biography VARCHAR2(4000),
         	    dob DATE,
         	    age NUMBER(3)
     	    )
@@ -652,7 +652,7 @@ def handle_db():
         	    f_name VARCHAR2(25),
         	    m_initial CHAR(1),
         	    l_name VARCHAR2(25),
-        	    biography VARCHAR2(3000),
+        	    biography VARCHAR2(4000),
         	    dob DATE,
         	    age NUMBER(3)
     	    )
@@ -1147,7 +1147,6 @@ def handle_db():
     try:
         print("Dropping tables ...")
         init_drop()
-        sleep(0.5)
     except Exception as e:
         print("Something went wrong dropping tables", str(e))
     try:
