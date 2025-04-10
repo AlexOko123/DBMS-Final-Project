@@ -853,7 +853,7 @@ def handle_db():
 
                 # movie awards
 
-                for movie_award in movie_data.get("Awards").split(","):
+                for movie_award in movie_data.get("Awards").split("."):
                     cursor.execute(
                         """
                         INSERT INTO Movie_Awards
@@ -994,7 +994,7 @@ def handle_db():
                 show_director = show_data.get("Director")
                 show_writers = show_data.get("Writer").split(",")
                 show_actors = show_data.get("Actors").split(",")
-                show_awards = show_data.get("Awards").split(",")
+                show_awards = show_data.get("Awards").split(".")
                 show_genres = show_data.get("Genre").split(",")
                 director_id, director_description, director_dob = get_director_data(
                     show_director)
