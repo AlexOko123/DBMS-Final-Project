@@ -28,6 +28,16 @@ Port	1521
 Service	XEPDB1
 
 
+## For windows
+
+```bash
+docker run -d --name oracle-xe `
+  -p 1521:1521 -p 5500:5500 `
+  -e ORACLE_PASSWORD=YourPassword123 `
+  gvenzl/oracle-xe
+```
+OR
+`docker run -d --name oracle-xe -p 1521:1521 -p 5500:5500 -e ORACLE_PASSWORD=YourPassword123 gvenzl/oracle-xe`
 
 ## Todo
 

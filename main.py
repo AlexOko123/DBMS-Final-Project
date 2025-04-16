@@ -370,9 +370,12 @@ def get_director_data(director_name):
     response = requests.get(search_url.format(director_name.replace(
         " ", "%20")),
                             headers=headers)
+    print(response.status_code)
     if response.status_code == 200:
         search_results = BeautifulSoup(response.text, "lxml")
         div_preview = search_results.find("div", class_="sc-b03627f1-2 gWHDBT")
+        print(search_results.text)
+        sleep(100)
         ul = div_preview.find("ul")
         lis = ul.find_all("li")
         obj_div = lis[0].find("div",
@@ -382,6 +385,7 @@ def get_director_data(director_name):
             director_id_url = obj_a["href"]
             data_response = requests.get(imdb_url + director_id_url,
                                          headers=headers)
+
             data_results = BeautifulSoup(data_response.text, "lxml")
             # description = data_results.find("meta", attrs={"name": "description"})
             description_div = data_results.find(
