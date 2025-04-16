@@ -972,176 +972,177 @@ def handle_db():
 
     def fill_tv_data():
         for show_id, _ in tv_show_ids_json.items():
-            # try:
-            response = requests.get(main_api_url +
-                                    media_data_url.format(show_id))
-            show_data = json.loads(response.text)
-            print(show_data)
-            cursor.execute(
-                """
-            	INSERT INTO Tv_Show
-            	VALUES (:1, :2, :3, :4)
-        	""",
-                (
-                    show_id,
-                    show_data.get("Title"),
-                    float(show_data.get("imdbRating")),
-                    show_data.get("Year"),
-                ),
-            )
-            conn.commit()
+            try:
+                response = requests.get(main_api_url +
+                                        media_data_url.format(show_id))
+                show_data = json.loads(response.text)
+                print(show_data)
+                cursor.execute(
+                    """
+            	    INSERT INTO Tv_Show
+            	    VALUES (:1, :2, :3, :4)
+        	    """,
+                    (
+                        show_id,
+                        show_data.get("Title"),
+                        float(show_data.get("imdbRating")),
+                        show_data.get("Year"),
+                    ),
+                )
+                conn.commit()
 
-            show_director = show_data.get("Director")
-            show_writers = show_data.get("Writer").split(",")
-            show_actors = show_data.get("Actors").split(",")
-            show_awards = show_data.get("Awards").split(".")
-            show_genres = show_data.get("Genre").split(",")
-            director_id, director_description, director_dob = get_director_data(
-                show_director)
-            if director_id != None:
-                if not is_already_created(cursor, show_director, "director"):
-                    director_age = calculate_age(director_dob)
+                show_director = show_data.get("Director")
+                show_writers = show_data.get("Writer").split(",")
+                show_actors = show_data.get("Actors").split(",")
+                show_awards = show_data.get("Awards").split(".")
+                show_genres = show_data.get("Genre").split(",")
+                director_id, director_description, director_dob = get_director_data(
+                    show_director)
+                if director_id != None:
+                    if not is_already_created(cursor, show_director,
+                                              "director"):
+                        director_age = calculate_age(director_dob)
+                        cursor.execute(
+                            """
+                            INSERT INTO  Director (DID, FName, MInit, LName, Date_of_Birth, Age, Biography)
+                            VALUES (:1, :2, :3, :4, :5, :6, :7)
+                            """,
+                            (
+                                director_id,
+                                show_director.split(" ")[0],
+                                None,
+                                show_director.split(" ")[1],
+                                director_dob,
+                                director_age,
+                                director_description,
+                            ),
+                        )
+                        conn.commit()
+
+                    # directs tv show
                     cursor.execute(
                         """
-                        INSERT INTO  Director (DID, FName, MInit, LName, Date_of_Birth, Age, Biography)
-                        VALUES (:1, :2, :3, :4, :5, :6, :7)
+                        INSERT INTO  Directs_TV_Show (TID, DID) 
+                        VALUES (:1, :2)
                         """,
-                        (
-                            director_id,
-                            show_director.split(" ")[0],
-                            None,
-                            show_director.split(" ")[1],
-                            director_dob,
-                            director_age,
-                            director_description,
-                        ),
+                        (show_id, director_id),
                     )
                     conn.commit()
 
-                # directs tv show
+                # show awards
+                for award in show_awards:
+                    cursor.execute(
+                        """
+                        INSERT INTO Show_Award
+                        VALUES (:1, :2)
+                        """,
+                        (show_id, award.strip()),
+                    )
+                    conn.commit()
+
+                for genre in show_genres:
+                    cursor.execute(
+                        """
+                        INSERT INTO Show_Genre
+                        VALUES (:1, :2)
+                        """,
+                        (show_id, genre.strip()),
+                    )
+                    conn.commit()
+
+                # show review
+
+                user, review_title, user_rating, review_content, review_date = (
+                    get_movie_review(show_id))
+
                 cursor.execute(
                     """
-                    INSERT INTO  Directs_TV_Show (TID, DID) 
-                    VALUES (:1, :2)
+                    INSERT INTO Show_Review
+                    VALUES (:1, :2, :3, :4, :5, :6)
                     """,
-                    (show_id, director_id),
+                    (
+                        show_id,
+                        user,
+                        review_title,
+                        review_content,
+                        user_rating,
+                        review_date,
+                    ),
                 )
                 conn.commit()
 
-            # show awards
-            for award in show_awards:
-                cursor.execute(
-                    """
-                    INSERT INTO Show_Award
-                    VALUES (:1, :2)
-                    """,
-                    (show_id, award.strip()),
-                )
-                conn.commit()
+                for actor in show_actors:
+                    actor = actor.strip()
+                    actor_id, actor_description, actor_dob = get_director_data(
+                        actor)
+                    if actor_id != None:
+                        if not is_already_created(cursor, actor_id, "actor"):
+                            # add to directors table since not there
+                            actor_age = calculate_age(actor_dob)
+                            cursor.execute(
+                                """
+                                INSERT INTO Actor 
+                                VALUES (:1, :2, :3, :4, :5, :6, :7)
+                                """,
+                                (
+                                    actor_id,
+                                    actor.split(" ")[0],
+                                    None,
+                                    actor.split(" ")[1],
+                                    actor_description,
+                                    actor_dob,
+                                    actor_age,
+                                ),
+                            )
+                            conn.commit()
 
-            for genre in show_genres:
-                cursor.execute(
-                    """
-                    INSERT INTO Show_Genre
-                    VALUES (:1, :2)
-                    """,
-                    (show_id, genre.strip()),
-                )
-                conn.commit()
+                    # acts in show
+                    cursor.execute(
+                        """
+                        INSERT INTO Acts_Show 
+                        VALUES (:1, :2)
+                        """,
+                        (actor_id, show_id),
+                    )
+                    conn.commit()
 
-            # show review
+                for writer in show_writers:
+                    writer = writer.strip()
+                    writer_id, writer_description, writer_dob = get_director_data(
+                        writer)
+                    if writer_id != None:
+                        if not is_already_created(cursor, writer_id, "writer"):
+                            # add to directors table since not there
+                            writer_age = calculate_age(writer_dob)
+                            cursor.execute(
+                                """
+                                INSERT INTO Writer 
+                                VALUES (:1, :2, :3, :4, :5, :6, :7)
+                                """,
+                                (
+                                    writer_id,
+                                    writer.split(" ")[0],
+                                    None,
+                                    writer.split(" ")[1],
+                                    writer_description,
+                                    writer_dob,
+                                    writer_age,
+                                ),
+                            )
+                            conn.commit()
 
-            user, review_title, user_rating, review_content, review_date = (
-                get_movie_review(show_id))
+                    # writes in show
+                    cursor.execute(
+                        """
+                        INSERT INTO Writes_Show 
+                        VALUES (:1, :2)
+                        """,
+                        (writer_id, show_id),
+                    )
+                    conn.commit()
 
-            cursor.execute(
-                """
-                INSERT INTO Show_Review
-                VALUES (:1, :2, :3, :4, :5, :6)
-                """,
-                (
-                    show_id,
-                    user,
-                    review_title,
-                    review_content,
-                    user_rating,
-                    review_date,
-                ),
-            )
-            conn.commit()
-
-            for actor in show_actors:
-                actor = actor.strip()
-                actor_id, actor_description, actor_dob = get_director_data(
-                    actor)
-                if actor_id != None:
-                    if not is_already_created(cursor, actor_id, "actor"):
-                        # add to directors table since not there
-                        actor_age = calculate_age(actor_dob)
-                        cursor.execute(
-                            """
-                            INSERT INTO Actor 
-                            VALUES (:1, :2, :3, :4, :5, :6, :7)
-                            """,
-                            (
-                                actor_id,
-                                actor.split(" ")[0],
-                                None,
-                                actor.split(" ")[1],
-                                actor_description,
-                                actor_dob,
-                                actor_age,
-                            ),
-                        )
-                        conn.commit()
-
-                # acts in show
-                cursor.execute(
-                    """
-                    INSERT INTO Acts_Show 
-                    VALUES (:1, :2)
-                    """,
-                    (actor_id, show_id),
-                )
-                conn.commit()
-
-            for writer in show_writers:
-                writer = writer.strip()
-                writer_id, writer_description, writer_dob = get_director_data(
-                    writer)
-                if writer_id != None:
-                    if not is_already_created(cursor, writer_id, "writer"):
-                        # add to directors table since not there
-                        writer_age = calculate_age(writer_dob)
-                        cursor.execute(
-                            """
-                            INSERT INTO Writer 
-                            VALUES (:1, :2, :3, :4, :5, :6, :7)
-                            """,
-                            (
-                                writer_id,
-                                writer.split(" ")[0],
-                                None,
-                                writer.split(" ")[1],
-                                writer_description,
-                                writer_dob,
-                                writer_age,
-                            ),
-                        )
-                        conn.commit()
-
-                # writes in show
-                cursor.execute(
-                    """
-                    INSERT INTO Writes_Show 
-                    VALUES (:1, :2)
-                    """,
-                    (writer_id, show_id),
-                )
-                conn.commit()
-
-            # except Exception as e:
-            #     print("Something went wrong filling tv show... ", str(e))
+            except Exception as e:
+                print("Something went wrong filling tv show... ", str(e))
 
     try:
         print("Dropping tables ...")
