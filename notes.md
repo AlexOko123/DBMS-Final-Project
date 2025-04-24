@@ -19,6 +19,11 @@ sudo docker rm oracle-xe
 
 ```
 
+- To connect:
+```bash
+sudo docker exec -it oracle-xe sqlplus system/YourPassword123@//localhost:1521/XEPDB1
+```
+
 
 3. Login info:
 User	system (default admin)

@@ -1146,20 +1146,20 @@ def handle_db():
 
     try:
         print("Dropping tables ...")
-        init_drop()
+        # init_drop()
     except Exception as e:
         print("Something went wrong dropping tables", str(e))
     try:
         print("Initializing tables ...")
-        init_create_tables()
+        # init_create_tables()
     except Exception as e:
         print("something went wrong creating tables", str(e))
 
     print("Filling movie data .. ")
-    # fill_movie_data()
+    fill_movie_data()
     print("Finished filling movie data")
     print("Filling Tv data ... ")
-    fill_tv_data()
+    # fill_tv_data()
     print("Finished filling Tv data")
 
     # cursor.execute("SELECT * FROM Movie")
